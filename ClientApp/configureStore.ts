@@ -4,14 +4,22 @@ import { routerReducer, routerMiddleware } from 'react-router-redux';
 import * as StoreModule from './store';
 import { ApplicationState, reducers } from './store';
 import { History } from 'history';
+import { createLogger } from 'redux-logger';
+import { LocalizationActionTypeKeys } from './store/Localization';
 
 export default function configureStore(history: History, initialState?: ApplicationState) {
+    //? https://github.com/evgenyrodionov/redux-logger#log-only-in-development
+    //* Or you can create your own logger with custom options:
+    const logger = createLogger({
+        predicate: (getState, action) => action.type !== LocalizationActionTypeKeys.INIT_BEGIN
+    });
+
     // Build middleware. These are functions that can process the actions before they reach the store.
     const windowIfDefined = typeof window === 'undefined' ? null : window as any;
     // If devTools is installed, connect to it
     const devToolsExtension = windowIfDefined && windowIfDefined.__REDUX_DEVTOOLS_EXTENSION__ as () => GenericStoreEnhancer;
     const createStoreWithMiddleware: any = compose(
-        applyMiddleware(thunk, routerMiddleware(history)),
+        applyMiddleware(thunk, logger, routerMiddleware(history)),
         devToolsExtension ? devToolsExtension() : <S>(next: StoreEnhancerStoreCreator<S>) => next
     )(createStore);
 

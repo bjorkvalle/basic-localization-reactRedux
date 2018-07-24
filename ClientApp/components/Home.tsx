@@ -6,7 +6,7 @@ export default class Home extends React.Component<RouteComponentProps<{}>, {}> {
     public render() {
         return <div>
             <h1>
-                <Translate phraseId="greeting" options={{ addMissingTranslation: true }}>
+                <Translate phraseId="greeting" options={{ addMissingTranslation: true }} data={{ name: 'Eric' }}>
                     Hi, planet!
                 </Translate >
             </h1>

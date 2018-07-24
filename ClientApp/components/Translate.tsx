@@ -2,7 +2,8 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { ApplicationState } from '../store';
 import * as LocalizationStore from '../store/Localization';
-import { get } from 'lodash';
+import { get, forOwn } from 'lodash';
+import { ITranslation } from '../models';
 
 type Props = LocalizationStore.ILocalizationState
     & typeof LocalizationStore.actionCreators
@@ -12,8 +13,11 @@ type OwnProps = {
     phraseId: string,
     options?: {
         ignoreTranslate?: boolean,
-        addMissingTranslation?: boolean
-    }
+        addMissingTranslation?: boolean,
+        highlightMissingTranslation?: boolean,
+        renderInnerHtml?: boolean
+    },
+    data?: {}
 };
 
 type State = {
@@ -45,37 +49,67 @@ class Translate extends React.Component<Props, State> {
     }
 
     translate = (languageCode: string) => {
-        const { options, phraseId, translations, languages } = this.props;
+        const { options = {}, phraseId, translations, languages } = this.props;
         const defaultPhrase = this.props.children;
+        const hasValidDefaultTranslation: boolean = defaultPhrase !== undefined;
+        const ignoreTranslate: boolean = options.ignoreTranslate !== undefined
+            ? options.ignoreTranslate
+            : false;
+        const addMissingTranslation: boolean = options.addMissingTranslation !== undefined
+            ? options.addMissingTranslation
+            : false;
+        const highlightMissingTranslation: boolean = options.highlightMissingTranslation !== undefined
+            ? options.highlightMissingTranslation
+            : false;
 
-        if (options
-            && options.ignoreTranslate !== undefined
-            && options.ignoreTranslate === true) {
-            // console.log("ignore translation");
-        } else {
-            // console.log("translate");
-            //* fetch translations (store)
-            const translationsByLanguageCode: { code: string, phrases: any }[] = translations.filter(x => x.code === languageCode);
+        if (!ignoreTranslate) {
+            //* get translation dictionary by code and its phrases
+            const translationByLanguageCode: ITranslation = translations.filter(x => x.code === languageCode)[0];
+            const phrases: any = translationByLanguageCode.phrases;
 
-            //* find translated phrase
-            const phrases: any = translationsByLanguageCode[0].phrases;
-            //? doesn't support deep nesting
-            //? lodash (get) already supports deep nesting. Less boilerplate to write 
-            // const translatedPhrase = phrases[phraseId]; 
-            const translatedPhrase = get(phrases, phraseId);
+            //* find translated phrase(s)
+            //? simply writing 'const translatedPhrase = phrases[phraseId]' doesn't support deep nesting
+            //? lodash (get) already supports deep nesting. Less boilerplate to write
+            const translatedPhrase: string = get(phrases, phraseId);
+            const isValidTranslatedPhrase: boolean = translatedPhrase !== undefined;
 
-            if (translatedPhrase) {
+            if (isValidTranslatedPhrase) {
+                //* extract props by regex exp
+                const propsPattern: string = '(\\$\\{.*?\\})';
+                const splitStrings: string = translatedPhrase
+                    .split(new RegExp(propsPattern, 'gm'))
+                    .map((str: string) => {
+                        let match: string | undefined = undefined;
+                        //* loop through data's props (using lodash) and check for matches
+                        forOwn(this.props.data, (value, key) => {
+                            const keyPattern: string = '(\\$\\{' + key + '\\})';
+                            const regex: RegExp = new RegExp(keyPattern, 'gm');
+                            if (regex.test(str)) {
+                                //* if match, return key's value 
+                                match = value;
+                            }
+                        });
+                        return match ? match : str;
+                    })
+                    .reduce((translation, next) => {
+                        //* insert them back into the phrase using reduce
+                        return (translation + next);
+                    });
                 //* set translated phrase
-                this.setState({ phrase: translatedPhrase });
+                this.setState({ phrase: splitStrings });
             } else {
                 //* if missing translation
-                if (options
-                    && options.addMissingTranslation !== undefined
-                    && options.addMissingTranslation === true
-                    && defaultPhrase) {
-                    //* add existing default to phrase json (store)
-                    translations.filter(x => x.code === languageCode)[0].phrases[phraseId] = defaultPhrase;
-                } else {
+                if (addMissingTranslation) {
+                    if (hasValidDefaultTranslation) {
+                        //* add existing default to phrase json (store)
+                        translations.filter(x => x.code === languageCode)[0].phrases[phraseId] = defaultPhrase;
+                    } else {
+                        const language = languages.filter(x => x.code === languageCode)[0];
+                        this.setState({
+                            phrase: `Tried to add missing translation but no default was specified\nlanguage: '${language.name}',\nphraseId: '${phraseId}'`
+                        });
+                    }
+                } else if (highlightMissingTranslation) {
                     //* highlight missing translation
                     const language = languages.filter(x => x.code === languageCode)[0];
                     this.setState({

@@ -4,7 +4,7 @@ import { AppThunkAction } from '.';
 import { getOpenData, storeLang } from '../utils';
 
 //#region ACTION_TYPE_KEYS
-enum LocalizationActionTypeKeys {
+export enum LocalizationActionTypeKeys {
     INIT_BEGIN = 'INIT_BEGIN',
     INIT_SUCCESS = 'INIT_SUCCESS',
     INIT_FAIL = 'INIT_FAIL',
@@ -85,7 +85,7 @@ export const actionCreators = {
 const unloadedState: ILocalizationState = {
     isInitializing: true,
     isLoading: false,
-    languageCode: '',
+    languageCode: 'en',
     translations: [],
     languages: []
 };
