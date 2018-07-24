@@ -5,14 +5,18 @@ import Translate from './Translate';
 export default class Home extends React.Component<RouteComponentProps<{}>, {}> {
     public render() {
         return <div>
+
             <h1>
                 <Translate phraseId="greeting" options={{ addMissingTranslation: true }} data={{ name: 'Eric' }}>
                     Hi, planet!
                 </Translate >
             </h1>
             <p>
-                <Translate phraseId="welcome" />
+                <Translate phraseId="welcome.intro" />
             </p>
+
+            <Translate phraseId="welcome.buildList" />
+
             <ul>
                 <li><a href='https://get.asp.net/'>ASP.NET Core</a> and <a href='https://msdn.microsoft.com/en-us/library/67ef8sbd.aspx'>C#</a> for cross-platform server-side code</li>
                 <li><a href='https://facebook.github.io/react/'>React</a>, <a href='http://redux.js.org'>Redux</a>, and <a href='http://www.typescriptlang.org/'>TypeScript</a> for client-side code</li>
