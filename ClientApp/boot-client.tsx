@@ -1,4 +1,5 @@
 import './css/site.css';
+import './css/appStyles.scss';
 import 'bootstrap';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
@@ -24,9 +25,9 @@ function renderApp() {
     // and injects the app into a DOM element. 
     ReactDOM.render(
         <AppContainer>
-                <Provider store={store}>
-                    <ConnectedRouter history={history} children={routes} />
-                </Provider>
+            <Provider store={store}>
+                <ConnectedRouter history={history} children={routes} />
+            </Provider>
         </AppContainer>,
         document.getElementById('react-app')
     );
