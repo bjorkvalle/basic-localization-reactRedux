@@ -4,6 +4,7 @@ import { ApplicationState } from '../store';
 import * as LocalizationStore from '../store/Localization';
 import { get, forOwn } from 'lodash';
 import { ITranslation } from '../models';
+import { hasHtml, getActiveLanguage } from '../utils';
 
 type Props = LocalizationStore.ILocalizationState
     & typeof LocalizationStore.actionCreators
@@ -75,7 +76,7 @@ class Translate extends React.Component<Props, State> {
             const isValidTranslatedPhrase: boolean = translatedPhrase !== undefined;
 
             if (isValidTranslatedPhrase) {
-                //* extract props by regex exp
+                //* extract props by regex exp and find matching translations
                 const propsPattern: string = '(\\$\\{.*?\\})';
                 const splitProps: string = translatedPhrase
                     .split(new RegExp(propsPattern, 'gm'))
@@ -105,14 +106,14 @@ class Translate extends React.Component<Props, State> {
                         //* add existing default to phrase json (store)
                         translations.filter(x => x.code === languageCode)[0].phrases[phraseId] = defaultPhrase;
                     } else {
-                        const language = languages.filter(x => x.code === languageCode)[0];
+                        const language = getActiveLanguage(languages, languageCode);
                         this.setState({
                             phrase: `Tried to add missing translation but no default was specified\nlanguage: '${language.name}',\nphraseId: '${phraseId}'`
                         });
                     }
                 } else if (highlightMissingTranslation) {
                     //* highlight missing translation
-                    const language = languages.filter(x => x.code === languageCode)[0];
+                    const language = getActiveLanguage(languages, languageCode);
                     this.setState({
                         phrase: `Missing translation for\nlanguage: '${language.name}',\nphraseId: '${phraseId}'`
                     });
@@ -121,11 +122,6 @@ class Translate extends React.Component<Props, State> {
         }
     }
 
-    hasHtml = (value: string): boolean => {
-        const pattern = /(&[^\s]*;|<\/?\w+((\s+\w+(\s*=\s*(?:".*?"|'.*?'|[\^'">\s]+))?)+\s*|\s*)\/?>)/;
-        return !value ? false : value.search(pattern) >= 0;
-    };
-
     render() {
         const phrase: string = this.state.phrase;
         const { options = {} } = this.props;
@@ -133,19 +129,25 @@ class Translate extends React.Component<Props, State> {
             ? options.renderInnerHtml
             : false;
 
-        if (renderInnerHtml && this.hasHtml(phrase)) {
-            return (
-                <span style={{ "whiteSpace": "pre-wrap" }} dangerouslySetInnerHTML={{ __html: phrase }}>
-                </span>
-            )
+        if (renderInnerHtml && hasHtml(phrase)) {
+            return this.renderWithMarkup(phrase);
         } else {
-            //* whitespace pre-wrap makes sure newline (\n) is taken care of
-            return (
-                <span style={{ "whiteSpace": "pre-wrap" }}>
-                    {this.state.phrase}
-                </span>
-            )
+            return this.renderWithoutMarkup();
         }
+    }
+
+    renderWithMarkup(phrase: string): JSX.Element {
+        return (
+            <span style={{ "whiteSpace": "pre-wrap" }} dangerouslySetInnerHTML={{ __html: phrase }}>
+            </span>
+        );
+    }
+
+    renderWithoutMarkup() {
+        //* whitespace pre-wrap makes sure newline (\n) is taken care of
+        return (
+            <span style={{ "whiteSpace": "pre-wrap" }}> {this.state.phrase} </span>
+        );
     }
 }
 export default connect((state: ApplicationState) => state.localization, LocalizationStore.actionCreators)(Translate);
