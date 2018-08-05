@@ -17,12 +17,12 @@ type OwnProps = {
         highlightMissingTranslation?: boolean,
         renderInnerHtml?: boolean
     },
-    data?: {}
+    propsData?: {}
 };
 
 type State = {
     currentLanguageCode: string;
-    phrase: string
+    phrase: string;
 };
 
 class Translate extends React.Component<Props, State> {
@@ -44,12 +44,12 @@ class Translate extends React.Component<Props, State> {
 
         if (currentLanguageCode !== languageCode) {
             this.setState({ currentLanguageCode: languageCode });
-            this.translate(props.languageCode);
+            this.translate(languageCode);
         }
     }
 
     translate = (languageCode: string) => {
-        const { options = {}, phraseId, translations, languages } = this.props;
+        const { options = {}, phraseId, translations, languages, propsData = {} } = this.props;
         const defaultPhrase = this.props.children;
         const hasValidDefaultTranslation: boolean = defaultPhrase !== undefined;
         const ignoreTranslate: boolean = options.ignoreTranslate !== undefined
@@ -61,6 +61,7 @@ class Translate extends React.Component<Props, State> {
         const highlightMissingTranslation: boolean = options.highlightMissingTranslation !== undefined
             ? options.highlightMissingTranslation
             : false;
+
 
         if (!ignoreTranslate) {
             //* get translation dictionary by code and its phrases
@@ -76,12 +77,12 @@ class Translate extends React.Component<Props, State> {
             if (isValidTranslatedPhrase) {
                 //* extract props by regex exp
                 const propsPattern: string = '(\\$\\{.*?\\})';
-                const splitStrings: string = translatedPhrase
+                const splitProps: string = translatedPhrase
                     .split(new RegExp(propsPattern, 'gm'))
                     .map((str: string) => {
                         let match: string | undefined = undefined;
                         //* loop through data's props (using lodash) and check for matches
-                        forOwn(this.props.data, (value, key) => {
+                        forOwn(propsData, (value, key) => {
                             const keyPattern: string = '(\\$\\{' + key + '\\})';
                             const regex: RegExp = new RegExp(keyPattern, 'gm');
                             if (regex.test(str)) {
@@ -96,7 +97,7 @@ class Translate extends React.Component<Props, State> {
                         return (translation + next);
                     });
                 //* set translated phrase
-                this.setState({ phrase: splitStrings });
+                this.setState({ phrase: splitProps });
             } else {
                 //* if missing translation
                 if (addMissingTranslation) {
@@ -120,13 +121,31 @@ class Translate extends React.Component<Props, State> {
         }
     }
 
+    hasHtml = (value: string): boolean => {
+        const pattern = /(&[^\s]*;|<\/?\w+((\s+\w+(\s*=\s*(?:".*?"|'.*?'|[\^'">\s]+))?)+\s*|\s*)\/?>)/;
+        return !value ? false : value.search(pattern) >= 0;
+    };
+
     render() {
-        //* whitespace pre-wrap makes sure newline (\n) is taken care of
-        return (
-            <span style={{ "whiteSpace": "pre-wrap" }}>
-                {this.state.phrase}
-            </span>
-        )
+        const phrase: string = this.state.phrase;
+        const { options = {} } = this.props;
+        const renderInnerHtml: boolean = options.renderInnerHtml !== undefined
+            ? options.renderInnerHtml
+            : false;
+
+        if (renderInnerHtml && this.hasHtml(phrase)) {
+            return (
+                <span style={{ "whiteSpace": "pre-wrap" }} dangerouslySetInnerHTML={{ __html: phrase }}>
+                </span>
+            )
+        } else {
+            //* whitespace pre-wrap makes sure newline (\n) is taken care of
+            return (
+                <span style={{ "whiteSpace": "pre-wrap" }}>
+                    {this.state.phrase}
+                </span>
+            )
+        }
     }
 }
 export default connect((state: ApplicationState) => state.localization, LocalizationStore.actionCreators)(Translate);

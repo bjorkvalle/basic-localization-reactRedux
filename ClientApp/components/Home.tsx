@@ -7,7 +7,7 @@ export default class Home extends React.Component<RouteComponentProps<{}>, {}> {
         return <div>
 
             <h1>
-                <Translate phraseId="greeting" options={{ addMissingTranslation: true }} data={{ name: 'Eric' }}>
+                <Translate phraseId="greeting" options={{ addMissingTranslation: true }} propsData={{ name: 'Eric' }}>
                     Hi, planet!
                 </Translate >
             </h1>
@@ -15,7 +15,7 @@ export default class Home extends React.Component<RouteComponentProps<{}>, {}> {
                 <Translate phraseId="welcome.intro" />
             </p>
 
-            <Translate phraseId="welcome.buildList" />
+            <Translate phraseId="welcome.buildList" options={{ renderInnerHtml: true }} />
 
             <ul>
                 <li><a href='https://get.asp.net/'>ASP.NET Core</a> and <a href='https://msdn.microsoft.com/en-us/library/67ef8sbd.aspx'>C#</a> for cross-platform server-side code</li>
@@ -35,8 +35,16 @@ export default class Home extends React.Component<RouteComponentProps<{}>, {}> {
             </ul>
 
             <p>
-                <Translate phraseId="missing" />
+                <Translate phraseId="missing" options={{ renderInnerHtml: true }} />
             </p>
+
+            {/* {[
+                "Some text.",
+                <h2 key="heading-1">A heading</h2>,
+                "More text.",
+                <h2 key="heading-2">Another heading</h2>,
+                "Even more text."
+            ]} */}
         </div>;
     }
 }
