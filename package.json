@@ -2,6 +2,9 @@
   "name": "localizeTests",
   "private": true,
   "version": "0.0.0",
+  "scripts": {
+    "test": "karma start ./karma.conf.js"
+  },
   "dependencies": {
     "@types/history": "4.6.0",
     "@types/prop-types": "^15.5.2",
@@ -54,8 +57,17 @@
     "yup": "0.24.1"
   },
   "devDependencies": {
+    "@types/chai": "^4.1.4",
+    "@types/jasmine": "^2.8.8",
     "@types/lodash": "^4.14.112",
     "@types/yup": "^0.24.1",
+    "chai": "^4.1.2",
+    "jasmine-core": "^3.1.0",
+    "karma": "^2.0.5",
+    "karma-chai": "^0.1.0",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-jasmine": "^1.1.2",
+    "karma-webpack": "^3.0.0",
     "node-sass": "^4.9.2",
     "sass-loader": "^7.0.3"
   }

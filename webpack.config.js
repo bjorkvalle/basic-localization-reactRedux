@@ -21,12 +21,15 @@ module.exports = (env) => {
                 { test: /\.(png|jpg|jpeg|gif|svg)$/, use: 'url-loader?limit=25000' }
             ]
         },
-        plugins: [new CheckerPlugin()]
+        plugins: [new CheckerPlugin()],
     });
 
     // Configuration for client-side bundle suitable for running in browsers
     const clientBundleOutputDir = './wwwroot/dist';
     const clientBundleConfig = merge(sharedConfig(), {
+        node: {
+            fs: 'empty'
+        },
         entry: { 'main-client': './ClientApp/boot-client.tsx' },
         module: {
             rules: [

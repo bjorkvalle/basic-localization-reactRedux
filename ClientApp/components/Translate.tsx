@@ -75,10 +75,6 @@ class Translate extends React.Component<Props, State> {
             const translatedPhrase: string = get(phrases, phraseId);
             const isValidTranslatedPhrase: boolean = translatedPhrase !== undefined;
 
-            if (phraseId === 'missing') {
-                console.log(translatedPhrase)
-            }
-
             if (isValidTranslatedPhrase) {
                 //? extract props by regex exp and find matching translations
                 const propsPattern: string = '(\\$\\{.*?\\})';

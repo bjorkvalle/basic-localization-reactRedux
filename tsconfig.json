@@ -16,7 +16,8 @@
       "dom"
     ],
     "types": [
-      "webpack-env"
+      "webpack-env",
+      "jasmine"
     ]
   },
   "exclude": [
