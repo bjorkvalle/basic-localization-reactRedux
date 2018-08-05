@@ -14,9 +14,8 @@ const TranslationBar: React.SFC<Props> = ({ changeLanguage }) => {
     };
 
     return (
-        <div className='row' style={containerStyle}>
-            <br />
-            <button className="btn btn-primary" onClick={() => changeLanguage('en')}>English</button>
+        <div className='mt-20' >
+            <button className="btn btn-primary mr-10" onClick={() => changeLanguage('en')}>English</button>
             <button className="btn btn-warning" onClick={() => changeLanguage('fr')}>French</button>
         </div>
     )

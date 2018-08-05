@@ -65,45 +65,49 @@ class Translate extends React.Component<Props, State> {
 
 
         if (!ignoreTranslate) {
-            //* get translation dictionary by code and its phrases
+            //? get translation dictionary by code and its phrases
             const translationByLanguageCode: ITranslation = translations.filter(x => x.code === languageCode)[0];
             const phrases: any = translationByLanguageCode.phrases;
 
-            //* find translated phrase(s)
-            //? simply writing 'const translatedPhrase = phrases[phraseId]' doesn't support deep nesting
-            //? lodash (get) already supports deep nesting. Less boilerplate to write
+            //? find translated phrase(s)
+            //* simply writing 'const translatedPhrase = phrases[phraseId]' doesn't support deep nesting
+            //* lodash (get) already supports deep nesting. Less boilerplate to write
             const translatedPhrase: string = get(phrases, phraseId);
             const isValidTranslatedPhrase: boolean = translatedPhrase !== undefined;
 
+            if (phraseId === 'missing') {
+                console.log(translatedPhrase)
+            }
+
             if (isValidTranslatedPhrase) {
-                //* extract props by regex exp and find matching translations
+                //? extract props by regex exp and find matching translations
                 const propsPattern: string = '(\\$\\{.*?\\})';
                 const splitProps: string = translatedPhrase
                     .split(new RegExp(propsPattern, 'gm'))
                     .map((str: string) => {
                         let match: string | undefined = undefined;
-                        //* loop through data's props (using lodash) and check for matches
+                        //? loop through data's props (using lodash) and check for matches
                         forOwn(propsData, (value, key) => {
                             const keyPattern: string = '(\\$\\{' + key + '\\})';
                             const regex: RegExp = new RegExp(keyPattern, 'gm');
                             if (regex.test(str)) {
-                                //* if match, return key's value 
+                                //? if match, return key's value 
                                 match = value;
                             }
                         });
                         return match ? match : str;
                     })
                     .reduce((translation, next) => {
-                        //* insert them back into the phrase using reduce
+                        //? insert them back into the phrase using reduce
                         return (translation + next);
                     });
-                //* set translated phrase
+                //? set translated phrase
                 this.setState({ phrase: splitProps });
             } else {
-                //* if missing translation
+                //? if missing translation
                 if (addMissingTranslation) {
                     if (hasValidDefaultTranslation) {
-                        //* add existing default to phrase json (store)
+                        //? add existing default to phrase json (store)
                         translations.filter(x => x.code === languageCode)[0].phrases[phraseId] = defaultPhrase;
                     } else {
                         const language = getActiveLanguage(languages, languageCode);
@@ -112,11 +116,15 @@ class Translate extends React.Component<Props, State> {
                         });
                     }
                 } else if (highlightMissingTranslation) {
-                    //* highlight missing translation
+                    //? highlight missing translation
                     const language = getActiveLanguage(languages, languageCode);
                     this.setState({
                         phrase: `Missing translation for\nlanguage: '${language.name}',\nphraseId: '${phraseId}'`
                     });
+                } else {
+                    this.setState({
+                        phrase: ''
+                    })
                 }
             }
         }
@@ -146,7 +154,9 @@ class Translate extends React.Component<Props, State> {
     renderWithoutMarkup() {
         //* whitespace pre-wrap makes sure newline (\n) is taken care of
         return (
-            <span style={{ "whiteSpace": "pre-wrap" }}> {this.state.phrase} </span>
+            <span style={{ "whiteSpace": "pre-wrap" }}>
+                {this.state.phrase}
+            </span>
         );
     }
 }
